@@ -4,6 +4,8 @@
 ''' rps.py - an app to play rock paper scissors (lizard spock)
 '''
 
+from __future__ import print_function
+
 class Game(object):
     ''' Abstract base class '''
     def __init__(self):
@@ -14,9 +16,7 @@ class Game(object):
         self.player_offset = [None] + [0 for x in range(count)] + [1 for x in range(count, 0, -1)]
 
     def is_valid(self, obj):
-        ''' validates obj
-            returns boolean
-        '''
+        ''' validates obj, returns boolean '''
         try:
             _ = self.objects.index(obj)
         except ValueError:
@@ -24,10 +24,7 @@ class Game(object):
         return True
 
     def result(self, obj1, obj2):
-        ''' prints the result of a comparison
-            takes two players found in self.objects
-            returns nothing
-        '''
+        ''' takes two players found in self.objects, prints results, returns nothing '''
         diff = (self.objects.index(obj2) - self.objects.index(obj1)) % len(self.objects)
         if diff == 0:
             print('Noone wins')
@@ -63,10 +60,10 @@ def main():
     parser.add_argument('-s', '--sheldon', help='print Sheldon\'s explanation', action='store_true')
     parser.add_argument('-c', '--classic', help='use classic objects', action='store_true')
     parser.add_argument('objects', nargs='*')
-
     args = parser.parse_args()
-    print(args)
 
+    if args.classic and args.sheldon:
+        exit('ERROR: Sheldon requires spock and a lizard')
     if args.classic:
         rps = Rps()
     else:
@@ -81,8 +78,7 @@ def main():
     else:
         for obj in args.objects:
             if not rps.is_valid(obj):
-                print('ERROR: {} is not a valid object'.format(obj))
-                return
+                exit('ERROR: {} is not a valid object'.format(obj))
         reduce(rps.result, args.objects)
 
 if __name__ == '__main__':
