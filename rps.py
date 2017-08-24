@@ -60,19 +60,25 @@ class Game(object):
 
     def result(self, obj1, obj2):
         ''' takes two players found in self.objects, prints results, returns second object '''
-        diff = (self.objects.index(obj2) - self.objects.index(obj1)) % len(self.objects)
+        winner = obj1
+        loser = obj2
+        index = self.objects.index(winner)
+        diff = (self.objects.index(loser) - index) % len(self.objects)
+        offset = self.beat_offset[diff]
         if self.debug:
-            print('difference: {}'.format(diff))
+            print('difference: {}, offset: {}, index: {}'.format(diff, offset, index))
+
         if diff == 0:
             print('Tie ({0} vs. {0})'.format(obj1))
         else:
-            winner, loser = obj1, obj2
-            if self.beat_offset[diff] is None:
+            if offset is None or self.beats[offset][index] is None:
+                winner, loser = loser, winner
+                index = self.objects.index(winner)
                 diff = self.count - diff
+                offset = self.beat_offset[diff]
                 if self.debug:
-                    print('checking other direction: difference: {}'.format(diff))
-                winner, loser = obj2, obj1
-            action = self.beats[self.beat_offset[diff]][self.objects.index(winner)]
+                    print('swapping sides; offset: {}, index: {}'.format(offset, index))
+            action = self.beats[offset][index]
             if action:
                 print('{} {} {}'.format(winner, action, loser))
             else:
