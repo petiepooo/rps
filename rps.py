@@ -142,6 +142,8 @@ def main():
             if not rps.is_valid_obj(obj):
                 exit('ERROR: {} is not a valid object'.format(obj))
         rps.iterate(args.objects)
+    else:
+        parser.print_usage()
 
 if __name__ == '__main__':
     try:
