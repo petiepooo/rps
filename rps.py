@@ -41,14 +41,15 @@ class Game(object):
         self.beats = list()
         self.beat_offset = [None] * self.count
         for index in range(0, length - 2, 2):
-            idx1 = self.objects.index(split_seq[index])
-            idx2 = self.objects.index(split_seq[index + 2])
-            diff = (idx2 - idx1) % self.count
-            if diff not in offsets:
-                offsets.append(diff)
-                self.beat_offset[diff] = len(self.beats)
-                self.beats.append(list([None] * self.count))
-            self.beats[offsets.index(diff)][idx1] = split_seq[index + 1]
+            if split_seq[index + 1] != '-':
+                idx1 = self.objects.index(split_seq[index])
+                idx2 = self.objects.index(split_seq[index + 2])
+                diff = (idx2 - idx1) % self.count
+                if diff not in offsets:
+                    offsets.append(diff)
+                    self.beat_offset[diff] = len(self.beats)
+                    self.beats.append(list([None] * self.count))
+                self.beats[offsets.index(diff)][idx1] = split_seq[index + 1]
         if self.debug:
             print('beats: {}'.format(self.beats))
             print('beat_offset: {}'.format(self.beat_offset))
