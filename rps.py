@@ -109,14 +109,14 @@ def main():
     from argparse import ArgumentParser
 
     parser = ArgumentParser(description='Rock Paper Scissors game',
-                            epilog='SEQ format: "rock bends scissors cuts paper covers rock"')
+                            epilog='ex: classic SEQ: "rock bends scissors cuts paper covers rock"')
     parser.add_argument('-d', '--debug', help='enable debug output', action='store_true')
     parser.add_argument('-t', '--test', help='print test output', action='store_true')
     parser.add_argument('-p', '--permissive', help='allow incomplete sequence', action='store_true')
     seq = parser.add_mutually_exclusive_group()
     seq.add_argument('-s', '--sheldon', help='enable lizard and spock', action='store_true')
     seq.add_argument('-c', '--custom', metavar='SEQ', help='use a custom sequence')
-    parser.add_argument('objects', help='eg. rock, paper, and scissors (>= 2)', nargs='*')
+    parser.add_argument('objects', help='eg. rock, paper, and scissors (>= 2)', nargs='+')
     args = parser.parse_args()
     if args.debug:
         print(args)
@@ -124,7 +124,7 @@ def main():
     if args.sheldon:
         rps = Game(sequence='scissors cuts paper covers rock crushes lizard poisons '
                             'spock smashes scissors decapitates lizard eats paper '
-                            'disproves spock vaporizes rock bends scissors',
+                            'disproves spock vaporizes rock crushes scissors',
                    debug=args.debug)
     elif args.custom:
         rps = Game(sequence=args.custom, debug=args.debug, strict=not args.permissive)
