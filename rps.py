@@ -59,21 +59,20 @@ class Game(object):
         if strict and len([y for x in self.beats for y in x if y is None]):
             raise ValueError('SEQ must have an action between all opject pairs')
 
-    def result(self, obj1, obj2):
-        ''' takes two players found in self.objects, prints results, returns second object '''
+    def action(self, obj1, obj2):
+        ''' takes two players found in self.objects, returns action '''
         winner = obj1
-        loser = obj2
         index = self.objects.index(winner)
-        diff = (self.objects.index(loser) - index) % len(self.objects)
+        diff = (self.objects.index(obj2) - index) % len(self.objects)
         offset = self.beat_offset[diff]
         if self.debug:
             print('difference: {}, offset: {}, index: {}'.format(diff, offset, index))
 
         if diff == 0:
-            print('Tie ({0} vs. {0})'.format(winner))
+            return 'ties', False
         else:
             if offset is None or self.beats[offset][index] is None:
-                winner, loser = loser, winner
+                winner = obj2
                 index = self.objects.index(winner)
                 diff = self.count - diff
                 offset = self.beat_offset[diff]
@@ -81,11 +80,21 @@ class Game(object):
                     print('swapping sides; offset: {}, index: {}'.format(offset, index))
 
             if offset is None or self.beats[offset][index] is None:
-                print('Unspecified ({} vs. {})'.format(loser, winner))
+                return None, False
 
             else:
-                action = self.beats[offset][index]
-                print('{} {} {}'.format(winner, action, loser))
+                return self.beats[offset][index], winner == obj2
+
+    def iterate(self, objects):
+        ''' iterate through a list of objects, calling self.action() for each pair '''
+        for obj1, obj2 in zip(objects, objects[1:]):
+            action, swapped = self.action(obj1, obj2)
+            if swapped:
+                obj1, obj2 = obj2, obj1
+            if action:
+                print('{} {} {}'.format(obj1, action, obj2))
+            else:
+                print('{} and {} have no winner'.format(obj1, obj2))
 
     def is_valid_obj(self, obj):
         ''' validates obj, returns boolean '''
@@ -94,11 +103,6 @@ class Game(object):
         except ValueError:
             return False
         return True
-
-    def iterate(self, objects):
-        ''' iterate through a list of objects, calling result() for each pair '''
-        for obj1, obj2 in zip(objects, objects[1:]):
-            self.result(obj1, obj2)
 
 def main():
     ''' called when run from CLI '''
@@ -133,15 +137,11 @@ def main():
             rps.iterate(['rock', 'lizard', 'spock', 'scissors', 'lizard', 'paper', 'spock', 'rock'])
             print('and as it always has,')
         rps.iterate(['rock', 'scissors'])
-
     elif len(args.objects) > 1:
         for obj in args.objects:
             if not rps.is_valid_obj(obj):
                 exit('ERROR: {} is not a valid object'.format(obj))
         rps.iterate(args.objects)
-
-    else:
-        print('nothing to do')
 
 if __name__ == '__main__':
     try:
