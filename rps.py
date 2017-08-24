@@ -7,11 +7,12 @@ from __future__ import print_function
 
 class Game(object):
     ''' class for generalized rock/paper/scissors games '''
-    def __init__(self, sequence='rock bends scissors cuts paper covers rock', debug=False):
+    def __init__(self, sequence='rock bends scissors cuts paper covers rock',
+                 debug=False, strict=True):
         self.debug = debug
-        self.set_sequence(sequence)
+        self._set_sequence(sequence, strict=strict)
 
-    def set_sequence(self, sequence, strict=True):
+    def _set_sequence(self, sequence, strict=True):
         ''' sets the class variables based on the sequence
             takes string, outputs nothing
             class variables:
@@ -69,7 +70,7 @@ class Game(object):
             print('difference: {}, offset: {}, index: {}'.format(diff, offset, index))
 
         if diff == 0:
-            print('Tie ({0} vs. {0})'.format(obj1))
+            print('Tie ({0} vs. {0})'.format(winner))
         else:
             if offset is None or self.beats[offset][index] is None:
                 winner, loser = loser, winner
@@ -78,12 +79,13 @@ class Game(object):
                 offset = self.beat_offset[diff]
                 if self.debug:
                     print('swapping sides; offset: {}, index: {}'.format(offset, index))
-            action = self.beats[offset][index]
-            if action:
-                print('{} {} {}'.format(winner, action, loser))
+
+            if offset is None or self.beats[offset][index] is None:
+                print('Unspecified ({} vs. {})'.format(loser, winner))
+
             else:
-                print('Unspecified ({} vs. {})'.format(obj1, obj2))
-        return obj2	# allows reduce() to work
+                action = self.beats[offset][index]
+                print('{} {} {}'.format(winner, action, loser))
 
     def is_valid_obj(self, obj):
         ''' validates obj, returns boolean '''
@@ -93,11 +95,14 @@ class Game(object):
             return False
         return True
 
+    def iterate(self, objects):
+        ''' iterate through a list of objects, calling result() for each pair '''
+        for obj1, obj2 in zip(objects, objects[1:]):
+            self.result(obj1, obj2)
 
 def main():
     ''' called when run from CLI '''
     from argparse import ArgumentParser
-    from functools import reduce as reduce_func
 
     parser = ArgumentParser(description='Rock Paper Scissors game',
                             epilog='SEQ format: "rock bends scissors cuts paper covers rock"')
@@ -112,28 +117,28 @@ def main():
     if args.debug:
         print(args)
 
-    rps = Game(debug=args.debug)
-
-    if args.custom:
-        rps.set_sequence(args.custom, strict=not args.permissive)
-    elif args.sheldon:
-        rps.set_sequence('scissors cuts paper covers rock crushes lizard poisons '
-                         'spock smashes scissors decapitates lizard eats paper '
-                         'disproves spock vaporizes rock bends scissors')
+    if args.sheldon:
+        rps = Game(sequence='scissors cuts paper covers rock crushes lizard poisons '
+                            'spock smashes scissors decapitates lizard eats paper '
+                            'disproves spock vaporizes rock bends scissors',
+                   debug=args.debug)
+    elif args.custom:
+        rps = Game(sequence=args.custom, debug=args.debug, strict=not args.permissive)
+    else:
+        rps = Game(debug=args.debug)
 
     if args.test:
-        reduce_func(rps.result, ['scissors', 'paper', 'rock'])
+        rps.iterate(['scissors', 'paper', 'rock'])
         if args.sheldon:
-            reduce_func(rps.result, ['rock', 'lizard', 'spock', 'scissors',
-                                     'lizard', 'paper', 'spock', 'rock'])
+            rps.iterate(['rock', 'lizard', 'spock', 'scissors', 'lizard', 'paper', 'spock', 'rock'])
             print('and as it always has,')
-        rps.result('rock', 'scissors')
+        rps.iterate(['rock', 'scissors'])
 
     elif len(args.objects) > 1:
         for obj in args.objects:
             if not rps.is_valid_obj(obj):
                 exit('ERROR: {} is not a valid object'.format(obj))
-        reduce_func(rps.result, args.objects)
+        rps.iterate(args.objects)
 
     else:
         print('nothing to do')
