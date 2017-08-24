@@ -20,19 +20,14 @@ class Game(object):
         if strict and split_seq[0] != split_seq[-1]:
             raise ValueError('sequence must end and start with same object')
 
-        self.count = 3
-        length = len(split_seq) - 1
-        while self.count * (self.count - 1) < length:
-            self.count += 2
-        if strict and self.count * (self.count - 1) != length:
-            raise ValueError('sequence must have an odd object count with action between each')
-
         self.objects = []
+        length = len(split_seq) - 1
         for index in range(0, length, 2):
             if split_seq[index] not in self.objects:
                 self.objects.append(split_seq[index])
-        if strict and len(self.objects) != self.count:
-            raise ValueError('unexpected number of objects in sequence')
+        self.count = len(self.objects)
+        if strict and self.count * (self.count - 1) != length:
+            raise ValueError('sequence must have an odd object count with action between each')
 
         offsets = []
         self.beats = []
@@ -42,7 +37,7 @@ class Game(object):
             diff = (idx2 - idx1) % self.count
             if diff not in offsets:
                 offsets.append(diff)
-                self.beats.append(list([None] * self.count), )
+                self.beats.append(list([None] * self.count))
             offset = offsets.index(diff)
             self.beats[offset][idx1] = split_seq[index + 1]
 
@@ -85,17 +80,24 @@ def main():
     from functools import reduce as reduce_func
 
     parser = argparse.ArgumentParser('Rock Paper Scissors game')
+    parser.add_argument('-d', '--debug', help='enable debug output', action='store_true')
     parser.add_argument('-s', '--sheldon', help='enable lizard and spock', action='store_true')
     parser.add_argument('-t', '--test', help='print test sequence', action='store_true')
     parser.add_argument('-p', '--permissive', help='allow incomplete sequence', action='store_true')
     parser.add_argument('-c', '--custom', metavar='SEQ', help='use a custom sequence')
     parser.add_argument('objects', nargs='*')
     args = parser.parse_args()
+    if args.debug:
+        print(args)
 
     rps = Game()
 
     if args.custom:
         rps.set_sequence(args.custom, strict=not args.permissive)
+    if args.debug:
+        print('objects: {}'.format(rps.objects))
+        print('beats: {}'.format(rps.beats))
+        print('beat_offset: {}'.format(rps.beat_offset))
 
     if args.sheldon:
         rps.set_sequence('scissors cuts paper covers rock crushes lizard poisons '
