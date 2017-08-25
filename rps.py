@@ -116,7 +116,7 @@ def main():
     seq = parser.add_mutually_exclusive_group()
     seq.add_argument('-s', '--sheldon', help='enable lizard and spock', action='store_true')
     seq.add_argument('-c', '--custom', metavar='SEQ', help='use a custom sequence')
-    parser.add_argument('objects', help='eg. rock, paper, and scissors (>= 2)', nargs='+')
+    parser.add_argument('objects', help='eg. rock, paper, and scissors (>= 2)', nargs='*')
     args = parser.parse_args()
     if args.debug:
         print(args)
